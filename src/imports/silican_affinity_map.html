@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affinity Map — SiLican Website Audit</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;1,400&family=Instrument+Serif&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F6F3;
+    --card-bg: #FFFFFF;
+    --text-primary: #1A1A1A;
+    --text-secondary: #5C5C5C;
+    --text-tertiary: #8A8A8A;
+    --border: rgba(0,0,0,0.1);
+    --border-hover: rgba(0,0,0,0.2);
+    --accent: #8B2B2B;
+    --accent-light: rgba(139,43,43,0.08);
+    --tag-bg: #F0EFEC;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1A1A1A;
+      --card-bg: #242422;
+      --text-primary: #E8E6E0;
+      --text-secondary: #A8A8A0;
+      --text-tertiary: #6E6E68;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.16);
+      --accent: #C45050;
+      --accent-light: rgba(196,80,80,0.12);
+      --tag-bg: #2C2C2A;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 3rem 2.5rem;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .board {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  .header h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    letter-spacing: 0.02em;
+  }
+  .header .divider {
+    width: 48px;
+    height: 2px;
+    background: var(--accent);
+    margin: 16px auto 0;
+  }
+
+  /* ── Meta row ── */
+  .meta-row {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    margin-bottom: 2.5rem;
+    font-size: 11px;
+    color: var(--text-tertiary);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+  .meta-row span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .meta-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* ── Columns grid ── */
+  .columns {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  .col { min-width: 0; }
+
+  .col-header {
+    position: relative;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border-bottom: 2px solid var(--text-primary);
+  }
+  .col-header h2 {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-right: 36px;
+  }
+  .col-header .count {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-light);
+    padding: 2px 9px;
+    border-radius: 10px;
+  }
+
+  /* ── Notes ── */
+  .note {
+    background: var(--card-bg);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    padding: 11px 13px;
+    margin-bottom: 10px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    transition: border-color 0.2s, transform 0.15s;
+    cursor: default;
+  }
+  .note:hover {
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+  }
+  .note.highlight {
+    border-left: 3px solid var(--accent);
+  }
+  .note .quote {
+    font-style: italic;
+    color: var(--text-primary);
+    opacity: 0.85;
+  }
+  .note .tag {
+    display: inline-block;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    background: var(--tag-bg);
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-top: 7px;
+  }
+
+  /* ── Legend ── */
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 0.5px solid var(--border);
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .legend-line {
+    width: 18px;
+    height: 3px;
+    border-radius: 1px;
+    background: var(--accent);
+  }
+  .legend-border {
+    width: 14px;
+    height: 14px;
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    background: var(--card-bg);
+  }
+
+  /* ── Staggered entry animation ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .note {
+    animation: fadeUp 0.4s ease both;
+  }
+  .col:nth-child(1) .note:nth-child(1) { animation-delay: 0.05s; }
+  .col:nth-child(1) .note:nth-child(2) { animation-delay: 0.1s; }
+  .col:nth-child(1) .note:nth-child(3) { animation-delay: 0.15s; }
+  .col:nth-child(1) .note:nth-child(4) { animation-delay: 0.2s; }
+  .col:nth-child(2) .note:nth-child(1) { animation-delay: 0.1s; }
+  .col:nth-child(2) .note:nth-child(2) { animation-delay: 0.15s; }
+  .col:nth-child(2) .note:nth-child(3) { animation-delay: 0.2s; }
+  .col:nth-child(2) .note:nth-child(4) { animation-delay: 0.25s; }
+  .col:nth-child(2) .note:nth-child(5) { animation-delay: 0.3s; }
+  .col:nth-child(3) .note:nth-child(1) { animation-delay: 0.15s; }
+  .col:nth-child(3) .note:nth-child(2) { animation-delay: 0.2s; }
+  .col:nth-child(3) .note:nth-child(3) { animation-delay: 0.25s; }
+  .col:nth-child(3) .note:nth-child(4) { animation-delay: 0.3s; }
+  .col:nth-child(3) .note:nth-child(5) { animation-delay: 0.35s; }
+  .col:nth-child(3) .note:nth-child(6) { animation-delay: 0.4s; }
+  .col:nth-child(3) .note:nth-child(7) { animation-delay: 0.45s; }
+  .col:nth-child(4) .note:nth-child(1) { animation-delay: 0.2s; }
+  .col:nth-child(4) .note:nth-child(2) { animation-delay: 0.25s; }
+  .col:nth-child(4) .note:nth-child(3) { animation-delay: 0.3s; }
+  .col:nth-child(4) .note:nth-child(4) { animation-delay: 0.35s; }
+  .col:nth-child(4) .note:nth-child(5) { animation-delay: 0.4s; }
+  .col:nth-child(4) .note:nth-child(6) { animation-delay: 0.45s; }
+  .col:nth-child(5) .note:nth-child(1) { animation-delay: 0.25s; }
+  .col:nth-child(5) .note:nth-child(2) { animation-delay: 0.3s; }
+  .col:nth-child(5) .note:nth-child(3) { animation-delay: 0.35s; }
+  .col:nth-child(5) .note:nth-child(4) { animation-delay: 0.4s; }
+  .col:nth-child(6) .note:nth-child(1) { animation-delay: 0.3s; }
+  .col:nth-child(6) .note:nth-child(2) { animation-delay: 0.35s; }
+  .col:nth-child(6) .note:nth-child(3) { animation-delay: 0.4s; }
+  .col:nth-child(6) .note:nth-child(4) { animation-delay: 0.45s; }
+  .col:nth-child(6) .note:nth-child(5) { animation-delay: 0.5s; }
+  .col:nth-child(6) .note:nth-child(6) { animation-delay: 0.55s; }
+  .col:nth-child(6) .note:nth-child(7) { animation-delay: 0.6s; }
+  .col:nth-child(6) .note:nth-child(8) { animation-delay: 0.65s; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1100px) {
+    .columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  @media (max-width: 680px) {
+    body { padding: 2rem 1rem; }
+    .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .header h1 { font-size: 24px; }
+    .meta-row { flex-wrap: wrap; gap: 12px 20px; }
+  }
+  @media (max-width: 440px) {
+    .columns { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="header">
+    <h1>Affinity map — SiLican website audit</h1>
+    <div class="subtitle">Qualitative synthesis from usability interviews · B2B deep-tech materials</div>
+    <div class="divider"></div>
+  </div>
+
+  <div class="meta-row">
+    <span><span class="meta-dot"></span>6 themes identified</span>
+    <span><span class="meta-dot"></span>39 observations</span>
+    <span><span class="meta-dot"></span>5 participants</span>
+  </div>
+
+  <div class="columns">
+
+    <!-- CLARITY OF INFORMATION -->
+    <div class="col">
+      <div class="col-header">
+        <h2>Clarity of information</h2>
+        <span class="count">4</span>
+      </div>
+      <div class="note highlight">
+        <span class="quote">"I wasn't sure what this company does at first glance — it looked super technical."</span>
+        <span class="tag">first impression</span>
+      </div>
+      <div class="note">
+        Had to search externally to understand what they were selling.
+        <span class="tag">comprehension</span>
+      </div>
+      <div class="note">
+        Homepage needs a single clear sentence that explains the business.
+        <span class="tag">value prop</span>
+      </div>
+      <div class="note">
+        Initially mistook the site for an electronics company, not a materials supplier.
+        <span class="tag">positioning</span>
+      </div>
+    </div>
+
+    <!-- PRODUCT UNDERSTANDING -->
+    <div class="col">
+      <div class="col-header">
+        <h2>Product understanding</h2>
+        <span class="count">5</span>
+      </div>
+      <div class="note highlight">
+        A comparison chart would help — e.g. which silicon variant is for batteries vs. other uses.
+        <span class="tag">differentiation</span>
+      </div>
+      <div class="note">
+        Nano-Si vs. Micro-Si distinctions are unclear; products all look the same.
+        <span class="tag">naming</span>
+      </div>
+      <div class="note">
+        Product pages are too short — still unclear what makes each product special.
+        <span class="tag">depth</span>
+      </div>
+      <div class="note">
+        No downloadable datasheet or technical PDF to share with engineering teams.
+        <span class="tag">collateral</span>
+      </div>
+      <div class="note">
+        Listing target industries per product would immediately add clarity.
+        <span class="tag">use cases</span>
+      </div>
+    </div>
+
+    <!-- TRUST & TECHNICAL PROOF -->
+    <div class="col">
+      <div class="col-header">
+        <h2>Trust & technical proof</h2>
+        <span class="count">7</span>
+      </div>
+      <div class="note highlight">
+        <span class="quote">"The site feels a bit like a student project — not very professional."</span>
+        <span class="tag">credibility</span>
+      </div>
+      <div class="note">
+        No clients or case studies mentioned, making it hard to trust.
+        <span class="tag">social proof</span>
+      </div>
+      <div class="note">
+        Would like to see certifications, test results, or ISO links.
+        <span class="tag">certification</span>
+      </div>
+      <div class="note">
+        Published research or third-party validation would increase credibility.
+        <span class="tag">validation</span>
+      </div>
+      <div class="note">
+        No team or founder info — unclear who's behind the company.
+        <span class="tag">transparency</span>
+      </div>
+      <div class="note">
+        Wants confirmation that products are already used in commercial batteries.
+        <span class="tag">adoption</span>
+      </div>
+      <div class="note">
+        No safety standards or third-party testing mentioned — causes hesitation.
+        <span class="tag">safety</span>
+      </div>
+    </div>
+
+    <!-- BUSINESS UTILITY -->
+    <div class="col">
+      <div class="col-header">
+        <h2>Business utility</h2>
+        <span class="count">6</span>
+      </div>
+      <div class="note highlight">
+        <span class="quote">"As a purchaser, I care most about order size, lead time, supply capacity — none of that is mentioned."</span>
+        <span class="tag">procurement</span>
+      </div>
+      <div class="note">
+        Unclear whether orders are limited to Taiwan or available globally.
+        <span class="tag">geography</span>
+      </div>
+      <div class="note">
+        No MOQ or logistics info — essential for B2B buyers.
+        <span class="tag">logistics</span>
+      </div>
+      <div class="note">
+        A simple "suitable for industrial-scale use" line would help a lot.
+        <span class="tag">scale signal</span>
+      </div>
+      <div class="note">
+        Delivery timelines matter greatly for manufacturers but aren't shown.
+        <span class="tag">lead time</span>
+      </div>
+      <div class="note">
+        Unclear whether custom formulations are offered vs. fixed specs only.
+        <span class="tag">customization</span>
+      </div>
+    </div>
+
+    <!-- VISUAL DESIGN -->
+    <div class="col">
+      <div class="col-header">
+        <h2>Visual design</h2>
+        <span class="count">4</span>
+      </div>
+      <div class="note highlight">
+        Looks outdated — feels like a website from the early 2010s.
+        <span class="tag">perception</span>
+      </div>
+      <div class="note">
+        Font is too thin, especially hard to read on mobile.
+        <span class="tag">legibility</span>
+      </div>
+      <div class="note">
+        Product list was difficult to locate.
+        <span class="tag">navigation</span>
+      </div>
+      <div class="note">
+        A more polished UI with clearer hierarchy would make it feel premium.
+        <span class="tag">polish</span>
+      </div>
+    </div>
+
+    <!-- CONTACT FLOW -->
+    <div class="col">
+      <div class="col-header">
+        <h2>Contact flow</h2>
+        <span class="count">8</span>
+      </div>
+      <div class="note highlight">
+        Wanted to request a sample but couldn't figure out how.
+        <span class="tag">samples</span>
+      </div>
+      <div class="note">
+        Contact form feels generic — more like a support inbox than a sales channel.
+        <span class="tag">intent mismatch</span>
+      </div>
+      <div class="note">
+        Needs a visible "Get a Quote" button or direct sales path.
+        <span class="tag">CTA</span>
+      </div>
+      <div class="note">
+        Submitted the form but received no confirmation — uncertain if message was received.
+        <span class="tag">feedback</span>
+      </div>
+      <div class="note">
+        No indication of expected response time after submitting.
+        <span class="tag">expectations</span>
+      </div>
+      <div class="note">
+        Would prefer a phone number or live chat for more direct communication.
+        <span class="tag">channel</span>
+      </div>
+      <div class="note">
+        Form doesn't disclose the recipient or whether data is secure.
+        <span class="tag">trust</span>
+      </div>
+      <div class="note">
+        Overall experience feels one-sided — no real invitation to partner.
+        <span class="tag">tone</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-line"></div>Key insight per theme</div>
+    <div class="legend-item"><div class="legend-border"></div>Individual observation</div>
+  </div>
+</div>
+</body>
+</html>

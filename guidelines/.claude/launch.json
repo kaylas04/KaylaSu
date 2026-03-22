@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Kayla_UX Dev Server",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "/Users/kaylasu/Desktop/workwork/Kayla_UX", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}
