@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const finestProjects = [
   {
@@ -122,6 +122,21 @@ function ProjectCard({ project }: { project: typeof finestProjects[0] }) {
 }
 
 export function FinestWorks() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+    const handleScroll = () => {
+      const scrollWidth = element.scrollWidth - element.clientWidth;
+      const progress = scrollWidth > 0 ? element.scrollLeft / scrollWidth : 0;
+      setScrollProgress(progress);
+    };
+    element.addEventListener('scroll', handleScroll);
+    return () => element.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <section id="explore" className="w-full bg-white rounded-t-3xl md:rounded-t-[3rem] pt-28 md:pt-40 pb-24 md:pb-32 shadow-[0_-10px_40px_rgba(10,25,47,0.03)] relative z-30 -mt-8 md:-mt-12">
       {/* Folder Tab Label */}
@@ -129,9 +144,9 @@ export function FinestWorks() {
         <span className="font-sans text-[9px] md:text-[10px] uppercase tracking-[0.3em] text-[#506680] font-medium">MADE TO EXPLORE</span>
       </div>
 
-      <div className="px-6 sm:px-12 md:px-24 max-w-[1400px] mx-auto">
-        {/* Header */}
-        <div className="flex flex-col items-center text-center mb-20">
+      {/* Header */}
+      <div className="px-6 sm:px-12 md:px-24 max-w-[1400px] mx-auto mb-16">
+        <div className="flex flex-col items-center text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -153,12 +168,52 @@ export function FinestWorks() {
             More details coming soon.
           </motion.p>
         </div>
+      </div>
 
-        {/* 2-column grid — larger cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-16">
-          {finestProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+      {/* Horizontal Scroll */}
+      <div className="w-full relative pb-8 overflow-hidden">
+        <style dangerouslySetInnerHTML={{__html: `
+          .finest-scroll {
+            padding-left: 0.75rem;
+            scroll-padding-left: 0.75rem;
+          }
+          .finest-last { margin-right: 0.75rem; }
+          @media (min-width: 640px) {
+            .finest-scroll { padding-left: 1.5rem; scroll-padding-left: 1.5rem; }
+            .finest-last { margin-right: 1.5rem; }
+          }
+          @media (min-width: 768px) {
+            .finest-scroll {
+              padding-left: max(6rem, calc((100vw - 1400px) / 2 + 6rem));
+              scroll-padding-left: max(6rem, calc((100vw - 1400px) / 2 + 6rem));
+            }
+            .finest-last { margin-right: max(6rem, calc((100vw - 1400px) / 2 + 6rem)); }
+          }
+          .finest-scroll::-webkit-scrollbar { display: none; }
+        `}} />
+        <div
+          ref={scrollRef}
+          className="finest-scroll flex overflow-x-auto gap-6 md:gap-8 snap-x snap-mandatory pb-6 md:pb-8 w-full"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
+          {finestProjects.map((project, index) => (
+            <div
+              key={project.id}
+              className={`flex-shrink-0 snap-start w-[75vw] sm:w-[55vw] lg:w-[38vw] max-w-[560px] ${index === finestProjects.length - 1 ? 'finest-last' : ''}`}
+            >
+              <ProjectCard project={project} />
+            </div>
           ))}
+        </div>
+
+        {/* Scroll Progress */}
+        <div className="w-full flex justify-center px-6 mt-4 md:mt-6">
+          <div className="w-full max-w-[200px] md:max-w-[300px] h-[3px] bg-[#0A192F]/10 relative overflow-hidden rounded-full">
+            <motion.div
+              className="absolute inset-y-0 left-0 bg-[#0A192F]/60 w-full origin-left rounded-full"
+              style={{ scaleX: scrollProgress }}
+            />
+          </div>
         </div>
       </div>
     </section>

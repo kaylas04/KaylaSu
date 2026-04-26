@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "motion/react";
 import { Link } from "react-router";
 import { ArrowRight } from "lucide-react";
 import { Navbar } from "../components/Navbar";
@@ -28,29 +28,10 @@ const P = {
 };
 
 const meta = [
-  { label: "Project Type", value: "Robotics UX\nHardware Interface\nEmbodied Interaction" },
-  { label: "Timeline",     value: "Feb 2026 – Present" },
-  { label: "Team",         value: "Co-founders\nMechanical Engineers\nSoftware Engineers\nUX Designer" },
-  { label: "Role",         value: "UX Designer" },
-];
-
-
-const solutions = [
-  {
-    index: "01",
-    title: "Spatial fold state visualiser",
-    body: "A live wireframe view that mirrors the robot's physical configuration in real time, using origami-inspired vector diagrams updated from sensor telemetry. Operators can read state at a glance without interpreting raw data.",
-  },
-  {
-    index: "02",
-    title: "Sequence composer",
-    body: "A modular, node-based canvas for building fold sequences without touching configuration files. Each step is a named fold state; transitions are drag-connected and preview-able before deployment.",
-  },
-  {
-    index: "03",
-    title: "Contextual error cards",
-    body: "When a fault occurs mid-sequence, a structured error card surfaces the affected joint, the expected vs actual state, and a plain-language recovery path — eliminating the need to cross-reference raw logs.",
-  },
+  { label: "Client",    value: "Origami Robotics\n(YC W26)" },
+  { label: "Timeline",  value: "10-Week Sprint\n2026" },
+  { label: "Team",      value: "4 UX Designers" },
+  { label: "My Role",   value: "Persona Development\nBranding Direction\nPlayground UX" },
 ];
 
 /* Decorative technical grid line SVG */
@@ -72,7 +53,6 @@ function GridLines() {
   );
 }
 
-/* Inline SVG grain filter ——applied as a pseudo-texture div */
 function PaperGrain({ opacity = 0.032 }: { opacity?: number }) {
   return (
     <>
@@ -96,7 +76,6 @@ function PaperGrain({ opacity = 0.032 }: { opacity?: number }) {
   );
 }
 
-/* Thin animated rule */
 function AnimRule({ delay = 0 }: { delay?: number }) {
   return (
     <motion.div
@@ -110,7 +89,6 @@ function AnimRule({ delay = 0 }: { delay?: number }) {
   );
 }
 
-/* Section label — e.g. "Research" */
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-6">
@@ -125,230 +103,71 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ── Origami wireframe illustration (SVG) ─────────────────────────
-   A minimal geometric origami crane silhouette rendered in hairline strokes
-──────────────────────────────────────────────────────────────────── */
-function OrigamiDiagram({ className = "" }: { className?: string }) {
+/* Neutral image placeholder */
+function ImgPlaceholder({ label, aspect = "aspect-[4/3]" }: { label: string; aspect?: string }) {
   return (
-    <svg
-      viewBox="0 0 360 260"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      aria-hidden
+    <div
+      className={`w-full ${aspect} flex items-center justify-center rounded-lg`}
+      style={{ background: P.surface, border: `0.5px solid ${P.rule}` }}
     >
-      {/* Ground shadow */}
-      <ellipse cx="180" cy="248" rx="90" ry="6" fill={P.rule} opacity="0.4" />
-
-      {/* Body polygon */}
-      <polygon
-        points="180,40 280,160 180,200 80,160"
-        fill="none"
-        stroke={P.accent}
-        strokeWidth="0.8"
-      />
-      {/* Internal fold lines */}
-      <line x1="180" y1="40"  x2="180" y2="200" stroke={P.accent} strokeWidth="0.5" strokeDasharray="4 4" opacity="0.5" />
-      <line x1="80"  y1="160" x2="280" y2="160" stroke={P.accent} strokeWidth="0.5" strokeDasharray="4 4" opacity="0.5" />
-      <line x1="180" y1="40"  x2="80"  y2="160" stroke={P.body}   strokeWidth="0.4" opacity="0.3" />
-      <line x1="180" y1="40"  x2="280" y2="160" stroke={P.body}   strokeWidth="0.4" opacity="0.3" />
-
-      {/* Left wing */}
-      <polygon
-        points="80,160 20,100 130,80"
-        fill="none"
-        stroke={P.body}
-        strokeWidth="0.7"
-        opacity="0.6"
-      />
-      <line x1="80" y1="160" x2="130" y2="80" stroke={P.body} strokeWidth="0.4" strokeDasharray="3 5" opacity="0.4" />
-
-      {/* Right wing */}
-      <polygon
-        points="280,160 340,100 230,80"
-        fill="none"
-        stroke={P.body}
-        strokeWidth="0.7"
-        opacity="0.6"
-      />
-      <line x1="280" y1="160" x2="230" y2="80" stroke={P.body} strokeWidth="0.4" strokeDasharray="3 5" opacity="0.4" />
-
-      {/* Head / beak */}
-      <polyline
-        points="180,200 165,230 148,238"
-        fill="none"
-        stroke={P.accent}
-        strokeWidth="0.8"
-      />
-      {/* Tail */}
-      <polyline
-        points="180,200 195,232 214,240"
-        fill="none"
-        stroke={P.accent}
-        strokeWidth="0.8"
-      />
-
-      {/* Dimension tick marks */}
-      {[
-        [80, 160, 80, 152],
-        [280, 160, 280, 152],
-        [180, 40, 188, 40],
-      ].map(([x1, y1, x2, y2], i) => (
-        <line key={i} x1={x1} y1={y1} x2={x2} y2={y2}
-          stroke={P.dim} strokeWidth="0.5" />
-      ))}
-
-      {/* Corner registration mark */}
-      <g opacity="0.25" stroke={P.ink} strokeWidth="0.5">
-        <line x1="8" y1="8"  x2="24" y2="8"  />
-        <line x1="8" y1="8"  x2="8"  y2="24" />
-        <line x1="352" y1="8"  x2="336" y2="8"  />
-        <line x1="352" y1="8"  x2="352" y2="24" />
-        <line x1="8" y1="252" x2="24" y2="252" />
-        <line x1="8" y1="252" x2="8"  y2="236" />
-      </g>
-    </svg>
+      <span
+        className="font-sans text-[11px] uppercase tracking-[0.2em] text-center px-6"
+        style={{ color: P.dim }}
+      >
+        {label}
+      </span>
+    </div>
   );
 }
 
-/* ── Robot fold-state wireframe ──────────────────────────────────── */
-function FoldStateWireframe({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 440 320" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
-      {/* Panel grid */}
-      {[0, 1, 2, 3].map((col) =>
-        [0, 1, 2].map((row) => {
-          const x = 40 + col * 90;
-          const y = 40 + row * 80;
-          const active = (col + row) % 3 === 0;
-          return (
-            <g key={`${col}-${row}`}>
-              <rect
-                x={x} y={y} width={78} height={68}
-                fill={active ? P.accentFaint : "none"}
-                stroke={active ? P.accent : P.rule}
-                strokeWidth={active ? 0.8 : 0.5}
-                rx="1"
-              />
-              {active && (
-                <>
-                  <line x1={x} y1={y} x2={x + 78} y2={y + 68}
-                    stroke={P.accent} strokeWidth="0.4" strokeDasharray="3 4" />
-                  <line x1={x + 78} y1={y} x2={x} y2={y + 68}
-                    stroke={P.accent} strokeWidth="0.4" strokeDasharray="3 4" />
-                </>
-              )}
-            </g>
-          );
-        })
-      )}
-      {/* Status bar */}
-      <rect x="40" y="290" width="360" height="16" rx="2"
-        fill="none" stroke={P.rule} strokeWidth="0.5" />
-      <rect x="40" y="290" width="220" height="16" rx="2"
-        fill={P.accentFaint} stroke="none" />
-      <text x="48" y="301" fontFamily="Jost, sans-serif" fontSize="7"
-        fill={P.accent} letterSpacing="1">FOLD STATE: ACTIVE — SEQUENCE 3 / 7</text>
+const timelineNodes = [
+  { week: "Week 1–2", phase: "Discover.",          above: true,  items: ["Problem framing", "User definition", "End-to-end journey"] },
+  { week: "Week 3–4", phase: "Define.",             above: false, items: ["Competitive insights", "Pain points", "Design principles"] },
+  { week: "Week 5–6", phase: "Brand & FOS.",        above: true,  items: ["Brand direction", "Landing page concepts"] },
+  { week: "Week 7–8", phase: "Onboarding Design.",  above: false, items: ["Onboarding flow", "Interaction patterns", "Iteration explorations"] },
+  { week: "Week 9–10", phase: "Refine & Deliver.", above: true,  items: ["Control interface", "Interactive prototype", "Demo flow"] },
+];
 
-      {/* Corner marks */}
-      <g opacity="0.2" stroke={P.ink} strokeWidth="0.5">
-        <line x1="12" y1="12" x2="28" y2="12" /><line x1="12" y1="12" x2="12" y2="28" />
-        <line x1="428" y1="12" x2="412" y2="12" /><line x1="428" y1="12" x2="428" y2="28" />
-      </g>
-    </svg>
-  );
-}
+function ComingSoonBlur({ children }: { children: React.ReactNode }) {
+  const [hovered, setHovered] = useState(false);
+  const [cursor, setCursor] = useState({ x: 0, y: 0 });
 
-/* ── Sequence node diagram ───────────────────────────────────────── */
-function SequenceDiagram({ className = "" }: { className?: string }) {
-  const nodes = [
-    { x: 60,  label: "FLAT" },
-    { x: 160, label: "FOLD A" },
-    { x: 260, label: "FOLD B" },
-    { x: 360, label: "LOCK" },
-  ];
   return (
-    <svg viewBox="0 0 440 120" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
-      {/* Connector lines */}
-      {nodes.slice(0, -1).map((n, i) => (
-        <line key={i}
-          x1={n.x + 32} y1="60" x2={nodes[i + 1].x - 32} y2="60"
-          stroke={P.rule} strokeWidth="1"
-        />
-      ))}
-      {/* Nodes */}
-      {nodes.map((n, i) => (
-        <g key={n.label}>
-          <circle cx={n.x} cy="60" r="28"
-            fill={i === 2 ? P.accentFaint : "none"}
-            stroke={i === 2 ? P.accent : P.rule}
-            strokeWidth={i === 2 ? 0.8 : 0.5}
-          />
-          <text x={n.x} y="57" textAnchor="middle"
-            fontFamily="Jost, sans-serif" fontSize="6.5"
-            fill={i === 2 ? P.accent : P.dim}
-            letterSpacing="1.2"
+    <div
+      className="relative cursor-none select-none"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onMouseMove={(e) => {
+        setCursor({ x: e.clientX, y: e.clientY });
+      }}
+      style={{ filter: "blur(6px)", pointerEvents: "auto" }}
+    >
+      {children}
+
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.6 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="pointer-events-none fixed z-[999] flex items-center justify-center rounded-full bg-[#0A192F] text-white"
+            style={{
+              width: 96,
+              height: 96,
+              position: "fixed",
+              left: cursor.x,
+              top: cursor.y,
+              transform: "translate(-50%, -50%)",
+            }}
           >
-            {n.label}
-          </text>
-          <text x={n.x} y="68" textAnchor="middle"
-            fontFamily="Jost, sans-serif" fontSize="5.5"
-            fill={P.dim} opacity="0.7"
-          >
-            {String(i + 1).padStart(2, "0")}
-          </text>
-          {i === 2 && (
-            <circle cx={n.x} cy="60" r="32"
-              fill="none" stroke={P.accent} strokeWidth="0.4" strokeDasharray="3 4" />
-          )}
-        </g>
-      ))}
-      {/* Arrow */}
-      <polygon points="392,57 404,60 392,63" fill={P.rule} />
-    </svg>
-  );
-}
-
-/* ── Error card diagram ──────────────────────────────────────────── */
-function ErrorCardDiagram({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 440 200" xmlns="http://www.w3.org/2000/svg" className={className} aria-hidden>
-      <rect x="40" y="24" width="360" height="152" rx="3"
-        fill={P.surface} stroke={P.rule} strokeWidth="0.7" />
-      {/* Header strip */}
-      <rect x="40" y="24" width="360" height="32" rx="3"
-        fill={P.accentFaint} stroke="none" />
-      <rect x="40" y="44" width="360" height="12" rx="0"
-        fill={P.accentFaint} stroke="none" />
-      <circle cx="64" cy="40" r="7"
-        fill="none" stroke={P.accent} strokeWidth="0.8" />
-      <line x1="64" y1="35" x2="64" y2="40" stroke={P.accent} strokeWidth="1.2" />
-      <circle cx="64" cy="43" r="1" fill={P.accent} />
-      <text x="80" y="43" fontFamily="Jost, sans-serif" fontSize="7.5"
-        fill={P.accent} letterSpacing="1">JOINT FAULT — AXIS 3 OVERLOAD</text>
-
-      {/* Body rows */}
-      {[
-        ["EXPECTED STATE", "FOLD B — 42°"],
-        ["ACTUAL STATE",   "FOLD B — 38° (Δ4°)"],
-        ["AFFECTED JOINT", "Left Lateral Hinge"],
-        ["RECOVERY",       "Re-home axis 3 → retry step 06"],
-      ].map(([k, v], i) => (
-        <g key={k}>
-          <text x="60" y={82 + i * 24} fontFamily="Jost, sans-serif" fontSize="6.5"
-            fill={P.dim} letterSpacing="0.8">{k}</text>
-          <text x="220" y={82 + i * 24} fontFamily="Jost, sans-serif" fontSize="7"
-            fill={P.body} letterSpacing="0.4">{v}</text>
-          <line x1="60" y1={88 + i * 24} x2="380" y2={88 + i * 24}
-            stroke={P.rule} strokeWidth="0.4" />
-        </g>
-      ))}
-
-      {/* Corner marks */}
-      <g opacity="0.15" stroke={P.ink} strokeWidth="0.5">
-        <line x1="12" y1="8" x2="26" y2="8" /><line x1="12" y1="8" x2="12" y2="22" />
-        <line x1="428" y1="8" x2="414" y2="8" /><line x1="428" y1="8" x2="428" y2="22" />
-      </g>
-    </svg>
+            <span className="font-sans text-[10px] uppercase tracking-[0.2em] leading-tight text-center px-2">
+              Coming<br />Soon
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -358,8 +177,8 @@ export function OrigamiCaseStudy() {
   }, []);
 
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [solutionHovered, setSolutionHovered] = useState(false);
-  const [solutionCursorPos, setSolutionCursorPos] = useState({ x: 0, y: 0 });
+  const timelineRef = useRef<HTMLDivElement>(null);
+  const timelineInView = useInView(timelineRef, { once: true, margin: "-15%" });
 
   return (
     <div
@@ -376,7 +195,6 @@ export function OrigamiCaseStudy() {
         }}
       />
 
-      {/* Selection colour */}
       <style>{`::selection { background: ${P.accent}; color: #fff; }`}</style>
 
       <div className="relative z-[2]">
@@ -399,7 +217,6 @@ export function OrigamiCaseStudy() {
               className="w-full h-auto block"
               style={{ filter: "sepia(0.06) brightness(0.98)" }}
             />
-            {/* Warm overlay tint — fades into page bg at bottom */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
@@ -466,7 +283,7 @@ export function OrigamiCaseStudy() {
                 className="font-display italic leading-tight mb-8"
                 style={{ fontSize: "clamp(1.35rem, 2.8vw, 2.25rem)", color: P.ink }}
               >
-                Designing both the internal tooling and external product language for a reconfigurable robotics platform.
+                Designing the onboarding flow, SDK playground, and brand identity for a YC-backed robotics startup — in ten weeks.
               </p>
 
               <div
@@ -474,277 +291,23 @@ export function OrigamiCaseStudy() {
                 style={{ color: P.body }}
               >
                 <p>
-                  Origami Robotics builds soft robotic systems that fold and reconfigure on demand, creating complex workflows across training, simulation, and hardware behavior.
+                  Origami Robotics (YC W26) builds sophisticated robotic hardware for precise manipulation — a product that is technically complex, combining both hardware and software. A team of four UX designers partnered with the founders across a 10-week sprint to improve the end-to-end experience for new external users.
                 </p>
                 <p>
-                  I designed engineer-facing interfaces for internal workflows, while also creating external demos, visual assets, and web experiences that made the system easier to understand and communicate.
+                  We delivered two core products: an onboarding wizard to guide users from unboxing to a working setup, and an SDK playground for exploring and controlling the robotic hand. My focus was persona development, branding direction, and playground UX.
                 </p>
               </div>
             </motion.div>
           </div>
         </section>
 
-
-        {/* ── Problem ─────────────────────────────────────────────── */}
-        <section className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 py-28 md:py-36">
-
-          {/* Section label */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-4 mb-16 md:mb-20"
-          >
-            <div className="w-8 h-px" style={{ backgroundColor: P.rule }} />
-            <span className="font-sans text-[10px] uppercase tracking-[0.35em]" style={{ color: P.dim }}>
-              Problem
-            </span>
-          </motion.div>
-
-          {/* Two-column grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8">
-
-            {/* ── External ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col gap-8"
-            >
-              {/* Label + copy */}
-              <div className="flex flex-col gap-4">
-                <span
-                  className="font-sans text-[10px] uppercase tracking-[0.3em]"
-                  style={{ color: P.accent }}
-                >
-                  External
-                </span>
-                <h3
-                  className="font-serif leading-snug"
-                  style={{ fontSize: "clamp(1.2rem, 2vw, 1.5rem)", color: P.ink }}
-                >
-                  How do you communicate a highly technical robotics system to investors, partners, and broader audiences?
-                </h3>
-                <p
-                  className="font-sans text-sm leading-relaxed font-light max-w-md"
-                  style={{ color: P.body }}
-                >
-                  Origami's technical depth was difficult to translate into clear external communication, creating friction in how the product was understood by non-specialist audiences.
-                </p>
-              </div>
-
-              {/* Asset: origami_ex video */}
-              <div
-                className="relative overflow-hidden w-full"
-                style={{
-                  border: `0.5px solid ${P.rule}`,
-                  background: P.surface,
-                }}
-              >
-                <PaperGrain opacity={0.016} />
-                <video
-                  src="/videos/origami_ex.mov"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-auto block relative z-10"
-                  style={{ display: "block" }}
-                />
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-px z-20"
-                  style={{ backgroundColor: P.rule }}
-                />
-              </div>
-            </motion.div>
-
-            {/* ── Internal ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col gap-8"
-            >
-              {/* Label + copy */}
-              <div className="flex flex-col gap-4">
-                <span
-                  className="font-sans text-[10px] uppercase tracking-[0.3em]"
-                  style={{ color: P.accent }}
-                >
-                  Internal
-                </span>
-                <h3
-                  className="font-serif leading-snug"
-                  style={{ fontSize: "clamp(1.2rem, 2vw, 1.5rem)", color: P.ink }}
-                >
-                  The training experience lacked a unified workflow, leaving engineers scattered across surfaces.
-                </h3>
-                <p
-                  className="font-sans text-sm leading-relaxed font-light max-w-md"
-                  style={{ color: P.body }}
-                >
-                  The internal training experience lacked a unified workflow, leaving engineers to piece together session health, failure causes, and next actions across multiple surfaces.
-                </p>
-              </div>
-
-              {/* Asset: origami_dash image */}
-              <div
-                className="relative overflow-hidden w-full"
-                style={{
-                  border: `0.5px solid ${P.rule}`,
-                  background: P.surface,
-                }}
-              >
-                <PaperGrain opacity={0.016} />
-                <img
-                  src="/images/origami_dash.png"
-                  alt="Origami internal dashboard"
-                  className="w-full h-auto block relative z-10"
-                />
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-px z-20"
-                  style={{ backgroundColor: P.rule }}
-                />
-              </div>
-            </motion.div>
-
-          </div>
-        </section>
-
-        {/* ── HMW Bridge ─────────────────────────────────────────── */}
-        <section
-          className="py-32 relative overflow-hidden"
-          style={{
-            backgroundColor: P.surface,
-            borderTop: `0.5px solid ${P.rule}`,
-            borderBottom: `0.5px solid ${P.rule}`,
-          }}
-        >
-          <PaperGrain opacity={0.022} />
-          <GridLines />
-          <div className="px-6 sm:px-12 md:px-24 max-w-[900px] mx-auto text-center relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <span
-                className="font-sans text-[10px] uppercase tracking-[0.4em] mb-8 block"
-                style={{ color: P.accent }}
-              >
-                Design question
-              </span>
-              <h2
-                className="font-serif leading-tight"
-                style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", color: P.ink }}
-              >
-                How might we bring greater clarity to both the{" "}
-                <span className="font-display italic" style={{ color: P.accent }}>
-                  training workflow
-                </span>{" "}
-                and the outward communication of a highly technical{" "}
-                <span className="font-display italic" style={{ color: P.accent }}>
-                  robotics platform
-                </span>
-                ?
-              </h2>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ── A. Product framing ─────────────────────────────────── */}
+        {/* ── The Challenge ───────────────────────────────────────── */}
         <section
           className="py-28 md:py-36 relative overflow-hidden"
           style={{ borderTop: `0.5px solid ${P.rule}` }}
         >
           <PaperGrain opacity={0.018} />
           <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
-              {/* Left: label + heading + bullets */}
-              <motion.div
-                className="md:col-span-5 flex flex-col gap-8"
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div>
-                  <SectionLabel>Product framing</SectionLabel>
-                  <h2
-                    className="font-serif text-3xl md:text-4xl leading-tight tracking-tight mt-4"
-                    style={{ color: P.ink }}
-                  >
-                    Shaping the{" "}
-                    <span className="font-display italic" style={{ color: P.accent }}>
-                      product direction
-                    </span>
-                  </h2>
-                </div>
-                <div className="flex flex-col gap-6">
-                  {[
-                    "Worked closely with the founder to contribute to early PRD development, helping define product direction, key needs, and overall problem framing.",
-                    "Helped identify the most important user surfaces and workflows across both internal tooling and external-facing experiences.",
-                    "Clarified what the product needed to communicate internally for technical use versus externally for demos, brand, and investor understanding.",
-                  ].map((text, i) => (
-                    <motion.div
-                      key={i}
-                      className="flex gap-4"
-                      initial={{ opacity: 0, x: -12 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.8, delay: 0.1 + i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    >
-                      <span
-                        className="font-sans text-[10px] pt-[3px] shrink-0 tracking-[0.2em]"
-                        style={{ color: P.accent }}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
-                        {text}
-                      </p>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Right: prd.png */}
-              <motion.div
-                className="md:col-span-7"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <div
-                  className="relative overflow-hidden"
-                  style={{ background: P.surface, border: `0.5px solid ${P.rule}` }}
-                >
-                  <PaperGrain opacity={0.014} />
-                  <img
-                    src="/images/prd.png"
-                    alt="Product requirements document"
-                    className="w-full h-auto block relative z-10"
-                  />
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── B. Branding + website direction ────────────────────── */}
-        <section
-          className="py-28 md:py-36 relative overflow-hidden"
-          style={{ backgroundColor: P.surface, borderTop: `0.5px solid ${P.rule}` }}
-        >
-          <PaperGrain opacity={0.022} />
-          <GridLines />
-          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
-            {/* Header */}
             <motion.div
               className="mb-14"
               initial={{ opacity: 0, y: 20 }}
@@ -752,238 +315,443 @@ export function OrigamiCaseStudy() {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <SectionLabel>Brand direction</SectionLabel>
+              <SectionLabel>The Challenge</SectionLabel>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
                 <h2
                   className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
                   style={{ color: P.ink }}
                 >
-                  Branding &{" "}
-                  <span className="font-display italic" style={{ color: P.accent }}>
-                    website direction
-                  </span>
+                  A technically complex<br />
+                  <span className="font-display italic" style={{ color: P.accent }}>product...</span>
                 </h2>
-                <div className="flex flex-col gap-4">
-                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
-                    Established an early brand and visual language that made Origami's technical ambition feel more coherent, credible, and externally legible.
-                  </p>
-                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
-                    Shaped how the company presents itself through branding and website direction, helping translate a complex robotics product into a clearer first impression.
-                  </p>
-                </div>
+                <p className="font-sans text-base leading-relaxed font-light self-end" style={{ color: P.body }}>
+                  For users who may not be experts.
+                </p>
               </div>
             </motion.div>
 
             <AnimRule />
 
-            {/* Branch 1: Visual identity — two images */}
-            <div className="mt-14">
-              <span
-                className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-5"
-                style={{ color: P.dim }}
-              >
-                Visual identity
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {["branding.png", "branding_1.png"].map((img, i) => (
-                  <motion.div
-                    key={img}
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.9, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden"
-                    style={{ border: `0.5px solid ${P.rule}` }}
-                  >
-                    <img
-                      src={`/images/${img}`}
-                      alt={`Brand identity ${i + 1}`}
-                      className="w-full h-auto block"
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Branch 2: Motion direction — three videos */}
-            <div className="mt-10">
-              <span
-                className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-5"
-                style={{ color: P.dim }}
-              >
-                Motion direction
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {["motion_in.mov", "motion_in_1.mov", "motion_in_2.mov"].map((vid, i) => (
-                  <motion.div
-                    key={vid}
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.9, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden"
-                    style={{ border: `0.5px solid ${P.rule}` }}
-                  >
-                    <video
-                      src={`/videos/${vid}`}
-                      autoPlay muted loop playsInline
-                      className="w-full h-auto block"
-                    />
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── C. AI-assisted visual systems ──────────────────────── */}
-        <section
-          className="py-28 md:py-36 relative overflow-hidden"
-          style={{ borderTop: `0.5px solid ${P.rule}` }}
-        >
-          <PaperGrain opacity={0.018} />
-          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
-            {/* Header */}
+            {/* current.png — full width */}
             <motion.div
-              className="mb-14"
-              initial={{ opacity: 0, y: 20 }}
+              className="mt-14 overflow-hidden"
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              style={{ border: `0.5px solid ${P.rule}` }}
             >
-              <SectionLabel>AI-assisted visual systems</SectionLabel>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                <h2
-                  className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
-                  style={{ color: P.ink }}
-                >
-                  Building{" "}
-                  <span className="font-display italic" style={{ color: P.accent }}>
-                    visual capability
-                  </span>
-                </h2>
-                <div className="flex flex-col gap-4">
-                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
-                    Built visual assets for robotics component and system storytelling — used across demos, website, and investor-facing materials.
-                  </p>
-                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
-                    Helped communicate product capability before the hardware had fully matured, giving the team a way to show what Origami could become.
-                  </p>
-                </div>
-              </div>
+              <img src="/images/current.png" alt="Current state" className="w-full h-auto block" />
             </motion.div>
 
-            <AnimRule />
-
-            {/* Sub 1: Asset showcase */}
-            <div className="mt-14">
-              <span
-                className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-5"
-                style={{ color: P.dim }}
-              >
-                Asset showcase
-              </span>
-
-              {/* 4-col grid: image + 3 videos */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* confuse.png + hard.png — two columns */}
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {[
+                { src: "/images/confuse.png", alt: "Confusing experience" },
+                { src: "/images/hard.png",   alt: "Hard to navigate" },
+              ].map((img, i) => (
                 <motion.div
-                  initial={{ opacity: 0, y: 12 }}
+                  key={img.src}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.9, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
                   className="overflow-hidden"
                   style={{ border: `0.5px solid ${P.rule}` }}
                 >
-                  <img
-                    src="/images/Image asset.png"
-                    alt="Visual asset"
-                    className="w-full h-full object-cover block"
-                  />
+                  <img src={img.src} alt={img.alt} className="w-full h-auto block" />
                 </motion.div>
-                {["origami_product.mp4", "side.mp4", "color_fold (1).mp4"].map((vid, i) => (
-                  <motion.div
-                    key={vid}
-                    initial={{ opacity: 0, y: 12 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.8, delay: 0.08 * (i + 1), ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden"
-                    style={{ border: `0.5px solid ${P.rule}` }}
-                  >
-                    <video
-                      src={`/videos/${vid}`}
-                      autoPlay muted loop playsInline
-                      className="w-full h-full object-cover block"
-                    />
-                  </motion.div>
+              ))}
+            </div>
+
+            {/* Closing text */}
+            <motion.p
+              className="mt-12 font-sans text-base md:text-lg leading-relaxed font-light max-w-2xl"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              style={{ color: P.body }}
+            >
+              The people building it are deep experts. The people who would use it — researchers, mechanical engineers, eventually factory workers — are not. That gap was the design challenge.
+            </motion.p>
+
+            {/* ori_context video */}
+            <motion.div
+              className="mt-6 overflow-hidden"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              style={{ border: `0.5px solid ${P.rule}`, background: P.surface }}
+            >
+              <PaperGrain opacity={0.016} />
+              <video
+                src="/videos/ori_context.mov"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-auto block relative z-10"
+              />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── HMW + Timeline ──────────────────────────────────────── */}
+        <section
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ backgroundColor: P.surface, borderTop: `0.5px solid ${P.rule}` }}
+        >
+          <PaperGrain opacity={0.022} />
+          <GridLines />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+
+            {/* HMW question */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="text-center mb-24 md:mb-32"
+            >
+              <span className="font-sans text-[10px] uppercase tracking-[0.4em] mb-6 block" style={{ color: P.accent }}>
+                Design Question
+              </span>
+              <h2
+                className="font-serif leading-tight mx-auto max-w-3xl"
+                style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", color: P.ink }}
+              >
+                How might we improve the{" "}
+                <span className="font-display italic" style={{ color: P.accent }}>end-to-end experience</span>{" "}
+                for new users?
+              </h2>
+            </motion.div>
+
+            {/* Timeline */}
+            <div ref={timelineRef} className="relative">
+              {/* Upper labels */}
+              <div className="flex" style={{ marginBottom: 12 }}>
+                {timelineNodes.map((node, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center">
+                    {node.above && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={timelineInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 0.6, delay: 0.4 + i * 0.28, ease: [0.16, 1, 0.3, 1] }}
+                        className="text-center flex flex-col gap-1.5"
+                      >
+                        <span className="font-serif italic leading-tight" style={{ fontSize: "clamp(0.85rem, 1.5vw, 1.05rem)", color: P.ink }}>
+                          {node.phase}
+                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          {node.items.map((item) => (
+                            <span key={item} className="font-sans leading-snug" style={{ fontSize: "clamp(0.6rem, 1vw, 0.7rem)", color: P.body }}>
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
                 ))}
               </div>
 
-              {/* Website showcase */}
-              <div className="mt-10">
-                <span
-                  className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-5"
-                  style={{ color: P.dim }}
+              {/* Line + nodes */}
+              <div className="relative flex items-center" style={{ height: 40 }}>
+                <motion.div
+                  className="absolute left-0 top-1/2 -translate-y-1/2 h-px origin-left"
+                  style={{ backgroundColor: P.ink, width: "100%" }}
+                  initial={{ scaleX: 0 }}
+                  animate={timelineInView ? { scaleX: 1 } : {}}
+                  transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                />
+                <motion.div
+                  className="absolute right-0 top-1/2 -translate-y-1/2"
+                  initial={{ opacity: 0 }}
+                  animate={timelineInView ? { opacity: 1 } : {}}
+                  transition={{ delay: 1.7, duration: 0.3 }}
                 >
-                  Website showcase
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {["origami_web_1.mov", "origami_web.mov"].map((vid, i) => (
+                  <svg width="10" height="10" viewBox="0 0 10 10"><polygon points="0,0 10,5 0,10" fill={P.ink} /></svg>
+                </motion.div>
+                {timelineNodes.map((node, i) => (
+                  <div key={i} className="flex-1 flex justify-center relative z-10">
                     <motion.div
-                      key={vid}
-                      initial={{ opacity: 0, y: 12 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.9, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                      className="overflow-hidden"
-                      style={{ border: `0.5px solid ${P.rule}` }}
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={timelineInView ? { scale: 1, opacity: 1 } : {}}
+                      transition={{ duration: 0.4, delay: 0.25 + i * 0.28, ease: [0.16, 1, 0.3, 1] }}
+                      className="w-2.5 h-2.5 rounded-full border"
+                      style={{ backgroundColor: P.bg, borderColor: P.ink, borderWidth: 1.5 }}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {/* Week labels */}
+              <div className="flex mt-2">
+                {timelineNodes.map((node, i) => (
+                  <div key={i} className="flex-1 flex justify-center">
+                    <motion.span
+                      className="font-sans text-center"
+                      style={{ fontSize: "clamp(0.55rem, 0.9vw, 0.65rem)", color: P.dim }}
+                      initial={{ opacity: 0 }}
+                      animate={timelineInView ? { opacity: 1 } : {}}
+                      transition={{ duration: 0.5, delay: 0.3 + i * 0.28 }}
                     >
-                      <video
-                        src={`/videos/${vid}`}
-                        autoPlay muted loop playsInline
-                        className="w-full h-auto block"
-                      />
-                    </motion.div>
-                  ))}
-                </div>
+                      {node.week}
+                    </motion.span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Lower labels */}
+              <div className="flex mt-3">
+                {timelineNodes.map((node, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center">
+                    {!node.above && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={timelineInView ? { opacity: 1, y: 0 } : {}}
+                        transition={{ duration: 0.6, delay: 0.4 + i * 0.28, ease: [0.16, 1, 0.3, 1] }}
+                        className="text-center flex flex-col gap-1.5"
+                      >
+                        <span className="font-serif italic leading-tight" style={{ fontSize: "clamp(0.85rem, 1.5vw, 1.05rem)", color: P.ink }}>
+                          {node.phase}
+                        </span>
+                        <div className="flex flex-col gap-0.5">
+                          {node.items.map((item) => (
+                            <span key={item} className="font-sans leading-snug" style={{ fontSize: "clamp(0.6rem, 1vw, 0.7rem)", color: P.body }}>
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Sub 2: Behind the scenes */}
-            <div
-              className="mt-14"
-              style={{ borderTop: `0.5px solid ${P.rule}`, paddingTop: "3.5rem" }}
+          </div>
+        </section>
+
+        {/* ── Defining Scope ───────────────────────────────────────── */}
+        <section
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ borderTop: `0.5px solid ${P.rule}` }}
+        >
+          <PaperGrain opacity={0.018} />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+            <motion.div
+              className="mb-14"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span
-                className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-5"
-                style={{ color: P.dim }}
+              <SectionLabel>Defining Scope</SectionLabel>
+              <h2
+                className="font-serif text-3xl md:text-4xl leading-tight tracking-tight mt-4"
+                style={{ color: P.ink }}
               >
-                Behind the scenes
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {["people.JPG", "people_1.JPG"].map((img, i) => (
-                  <motion.div
-                    key={img}
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.9, delay: i * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                    className="overflow-hidden"
-                    style={{ border: `0.5px solid ${P.rule}` }}
+                We mapped two clear<br />
+                <span className="font-display italic" style={{ color: P.accent }}>touchpoints.</span>
+              </h2>
+
+              {/* Touchpoint pills */}
+              <motion.div
+                className="flex flex-wrap justify-center gap-8 mt-12"
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {["Onboarding process", "Playground/SDK"].map((label) => (
+                  <span
+                    key={label}
+                    className="font-mono px-8 py-4 rounded-full border text-base md:text-lg"
+                    style={{ borderColor: P.ink, color: P.ink, letterSpacing: "0.01em" }}
                   >
-                    <img
-                      src={`/images/${img}`}
-                      alt={`Behind the scenes ${i + 1}`}
-                      className="w-full h-auto block"
-                    />
-                  </motion.div>
+                    {label}
+                  </span>
                 ))}
+              </motion.div>
+            </motion.div>
+
+          </div>
+        </section>
+
+        {/* ── Solution Overview ───────────────────────────────────── */}
+        <section
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ borderTop: `0.5px solid ${P.rule}` }}
+        >
+          <PaperGrain opacity={0.018} />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+            <motion.div
+              className="mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <SectionLabel>Solution Overview</SectionLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                <h2
+                  className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
+                  style={{ color: P.ink }}
+                >
+                  Three deliverables.<br />
+                  <span className="font-display italic" style={{ color: P.accent }}>One cohesive system.</span>
+                </h2>
+                <p className="font-sans text-base leading-relaxed font-light" style={{ color: P.body }}>
+                  Before going into the details of each deliverable, here's the full picture. We designed an onboarding flow, a playground, and a unified brand — each addressing a different moment in the new user's journey.
+                </p>
               </div>
+            </motion.div>
+
+            <AnimRule />
+
+            <div className="mt-14 flex flex-col gap-24">
+
+              {/* 01 — Onboarding Flow: Z-pattern */}
+              <motion.div
+                initial={{ opacity: 0, y: 32 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-8%" }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-px" style={{ backgroundColor: `rgba(140,123,98,0.4)` }} />
+                  <span className="font-sans text-[10px] uppercase tracking-[0.3em]" style={{ color: P.accent }}>01</span>
+                </div>
+                <h4 className="font-serif leading-tight mb-10" style={{ fontSize: "28px", color: P.ink }}>Onboarding Flow</h4>
+
+                <div className="flex flex-col gap-16 md:gap-20">
+                  {[
+                    { step: "Setup",     desc: "Introduce the setup wizard and guide users into the onboarding flow.",                                  img: "/images/setup.png" },
+                    { step: "Prepare",   desc: "Guide users through connecting the hardware and software to get the system ready for use.",             img: "/images/prepare.png" },
+                    { step: "Run",       desc: "Run automated diagnostics to check that the system is functioning properly in the background.",         img: "/images/run.png" },
+                    { step: "Calibrate", desc: "Help users configure joint angles and align the hand for accurate movement.",                           img: "/images/calibrate.png" },
+                    { step: "Done",      desc: "Provide a setup summary and transition users into the SDK to begin interacting with the hand.",         img: "/images/done.png" },
+                  ].map(({ step, desc, img }, i) => (
+                    <motion.div
+                      key={step}
+                      className={`flex flex-col md:flex-row items-center gap-10 md:gap-14 ${i % 2 === 0 ? "" : "md:flex-row-reverse"}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className="w-full md:w-[60%] flex-shrink-0 rounded-[1.5rem] overflow-hidden bg-[#f0f0f5]">
+                        <img src={img} alt={step} className="w-full h-full object-cover" draggable={false} />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <p className="font-sans text-sm leading-relaxed font-light max-w-xs" style={{ color: P.body }}>{desc}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* 02 — SDK Playground */}
+              <motion.div
+                initial={{ opacity: 0, y: 32 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-8%" }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                className="flex flex-col lg:flex-row-reverse items-start gap-10 lg:gap-14"
+              >
+                <div className="w-full lg:w-[30%] flex flex-col gap-4 lg:sticky lg:top-32 lg:pt-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-px" style={{ backgroundColor: `rgba(140,123,98,0.4)` }} />
+                    <span className="font-sans text-[10px] uppercase tracking-[0.3em]" style={{ color: P.accent }}>02</span>
+                  </div>
+                  <h4 className="font-serif leading-tight" style={{ fontSize: "28px", color: P.ink }}>SDK Playground</h4>
+                  <p className="font-sans leading-relaxed text-base font-light" style={{ color: P.body }}>
+                    A live, interactive control interface for exploring and manipulating the robotic hand. Designed to feel familiar to users of tools like Blender or After Effects.
+                  </p>
+                </div>
+                <div className="w-full lg:w-[70%]" style={{ background: P.surface }}>
+                  <video
+                    src="/videos/playground.mov"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full block"
+                  />
+                </div>
+              </motion.div>
+
+              {/* 03 — Branding */}
+              <motion.div
+                initial={{ opacity: 0, y: 32 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-8%" }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-px" style={{ backgroundColor: `rgba(140,123,98,0.4)` }} />
+                  <span className="font-sans text-[10px] uppercase tracking-[0.3em]" style={{ color: P.accent }}>03</span>
+                </div>
+                <h4 className="font-serif leading-tight mb-4" style={{ fontSize: "28px", color: P.ink }}>Branding</h4>
+                <p className="font-serif text-2xl md:text-3xl leading-snug mb-12" style={{ color: P.ink }}>
+                  Now how do we attract these new users?
+                </p>
+
+                <div className="flex flex-col gap-16 md:gap-20">
+                  {[
+                    {
+                      desc: "Ivory creates a sense of tranquility and calmness. Ink Blue represents futurism and builds trust.",
+                      media: <img src="/images/color.png" alt="Color palette" className="w-full block" draggable={false} />,
+                    },
+                    {
+                      desc: "All of these explorations were compiled into a cohesive brand book, which helped inform our visual strategy, storytelling, and AI prompting for the final brand assets.",
+                      media: <img src="/images/brandbook.png" alt="Brand book" className="w-full block" draggable={false} />,
+                    },
+                  ].map(({ desc, media }, i) => (
+                    <motion.div
+                      key={i}
+                      className={`flex flex-col md:flex-row items-center gap-10 md:gap-14 ${i % 2 === 0 ? "" : "md:flex-row-reverse"}`}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                    >
+                      <div className="flex-shrink-0 w-full md:w-[60%]">
+                        {media}
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <p className="font-sans text-sm leading-relaxed font-light max-w-xs" style={{ color: P.body }}>{desc}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {/* newweb.mov — full width with centered caption */}
+                  <motion.div
+                    className="flex flex-col items-center gap-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <p className="font-sans text-sm leading-relaxed font-light text-center" style={{ color: P.body }}>
+                      This also informed a new coded landing page prototype for Origami Robotics.
+                    </p>
+                    <video src="/videos/newweb.mov" autoPlay loop muted playsInline className="w-full block" />
+                  </motion.div>
+                </div>
+              </motion.div>
+
             </div>
           </div>
         </section>
 
-        {/* ── D. Engineer-facing dashboard exploration ─────────────── */}
+        {/* ── Blurred "Coming Soon" wrapper ───────────────────────── */}
+        <ComingSoonBlur>
+
+        {/* ── Competitor Research ─────────────────────────────────── */}
         <section
           className="py-28 md:py-36 relative overflow-hidden"
           style={{ backgroundColor: P.surface, borderTop: `0.5px solid ${P.rule}` }}
@@ -991,7 +759,6 @@ export function OrigamiCaseStudy() {
           <PaperGrain opacity={0.018} />
           <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
 
-            {/* Header row */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16 md:mb-20">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -999,7 +766,7 @@ export function OrigamiCaseStudy() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
               >
-                <SectionLabel>Engineer-facing exploration</SectionLabel>
+                <SectionLabel>Competitor Research</SectionLabel>
                 <h2
                   className="font-serif leading-tight mt-4"
                   style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: P.ink }}
@@ -1028,16 +795,13 @@ export function OrigamiCaseStudy() {
               transition={{ duration: 0.8, delay: 0.1 }}
               className="relative"
             >
-              {/* X-axis labels */}
               <div className="flex justify-between mb-2 px-14">
                 <span className="font-sans text-[9px] uppercase tracking-[0.28em]" style={{ color: P.dim }}>Live Monitoring</span>
                 <span className="font-sans text-[9px] uppercase tracking-[0.28em]" style={{ color: P.dim }}>Post-run Diagnosis</span>
               </div>
-              {/* X-axis rule */}
               <div className="h-px mx-14 mb-1" style={{ backgroundColor: P.rule }} />
 
               <div className="relative flex gap-0" style={{ minHeight: 520 }}>
-                {/* Y-axis label + rule */}
                 <div className="relative flex-shrink-0 w-14 flex flex-col justify-between items-center py-4">
                   <span
                     className="font-sans text-[9px] uppercase tracking-[0.28em]"
@@ -1051,13 +815,10 @@ export function OrigamiCaseStudy() {
                   >
                     Robotics-specific
                   </span>
-                  {/* Y-axis rule */}
                   <div className="absolute right-0 top-0 bottom-0 w-px" style={{ backgroundColor: P.rule }} />
                 </div>
 
-                {/* Grid area — cards positioned absolutely */}
                 <div className="relative flex-1">
-                  {/* Faint quadrant lines */}
                   <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.35 }}>
                     <div className="absolute top-1/2 left-0 right-0 h-px" style={{ backgroundColor: P.rule }} />
                     <div className="absolute left-1/2 top-0 bottom-0 w-px" style={{ backgroundColor: P.rule }} />
@@ -1220,154 +981,373 @@ export function OrigamiCaseStudy() {
                 ))}
               </div>
             </motion.div>
-
           </div>
         </section>
 
-        {/* ── Solutions ──────────────────────────────────────────── */}
+        {/* ── Onboarding ──────────────────────────────────────────── */}
         <section
-          className="py-32 relative overflow-hidden cursor-none"
-          onMouseEnter={() => setSolutionHovered(true)}
-          onMouseLeave={() => setSolutionHovered(false)}
-          onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            setSolutionCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-          }}
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ borderTop: `0.5px solid ${P.rule}` }}
         >
-          {/* Blur overlay */}
-          <div
-            className="absolute inset-0 z-20 pointer-events-none backdrop-blur-xl"
-            style={{ background: `rgba(245,240,232,0.55)` }}
-          />
-
-          {/* Coming soon bubble cursor */}
-          <AnimatePresence>
-            {solutionHovered && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.6 }}
-                transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                className="pointer-events-none absolute z-30 flex items-center justify-center rounded-full"
-                style={{
-                  width: 108,
-                  height: 108,
-                  left: solutionCursorPos.x - 54,
-                  top: solutionCursorPos.y - 54,
-                  backgroundColor: P.ink,
-                  color: P.bg,
-                }}
-              >
-                <span className="font-sans text-[9px] uppercase tracking-[0.22em] leading-relaxed text-center px-3">
-                  Coming<br />Soon
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Header */}
-          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 mb-20">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
-              <div className="md:col-span-4">
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                  className="font-serif text-4xl md:text-5xl tracking-tight leading-tight"
+          <PaperGrain opacity={0.018} />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+            <motion.div
+              className="mb-14"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <SectionLabel>Onboarding</SectionLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                <h2
+                  className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
                   style={{ color: P.ink }}
                 >
-                  The{" "}
-                  <span className="font-display italic" style={{ color: P.accent }}>
-                    solution
-                  </span>
-                </motion.h2>
-              </div>
-              <div className="md:col-span-8">
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                  className="font-sans leading-relaxed text-base md:text-lg font-light max-w-2xl"
-                  style={{ color: P.body }}
-                >
-                  Each feature was designed as a direct response to a specific
-                  friction point — turning invisible machine states into readable
-                  spatial information, and opaque config workflows into
-                  composable visual sequences.
-                </motion.p>
-              </div>
-            </div>
-            <div className="mt-16">
-              <AnimRule />
-            </div>
-          </div>
-
-          {/* Solution blocks */}
-          <div className="flex flex-col gap-40 max-w-[1400px] mx-auto px-6 sm:px-10 md:px-16">
-            {solutions.map((sol, i) => (
-              <motion.div
-                key={sol.index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-8%" }}
-                transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-                className={`flex flex-col ${i % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} items-start gap-10 lg:gap-14`}
-              >
-                {/* Text */}
-                <div className="w-full lg:w-[28%] flex flex-col gap-5 lg:sticky lg:top-32 lg:pt-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-px" style={{ backgroundColor: `rgba(140,123,98,0.4)` }} />
-                    <span className="font-sans text-[10px] uppercase tracking-[0.3em]" style={{ color: P.accent }}>
-                      Feature {sol.index}
-                    </span>
-                  </div>
-                  <h4 className="font-serif leading-tight" style={{ fontSize: "28px", color: P.ink }}>
-                    {sol.title}
-                  </h4>
-                  <p className="font-sans leading-relaxed text-base font-light" style={{ color: P.body }}>
-                    {sol.body}
+                  A five-step setup<br />
+                  <span className="font-display italic" style={{ color: P.accent }}>wizard</span>
+                </h2>
+                <div className="flex flex-col gap-4">
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                    We designed a setup wizard that walks users through five sequential steps — from unboxing to a fully calibrated, ready-to-use robotic hand — with no prior technical knowledge required.
                   </p>
                 </div>
+              </div>
+            </motion.div>
 
-                {/* Artifact */}
-                <div className="w-full lg:w-[72%]">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.25, duration: 1 }}
-                    className="relative overflow-hidden"
-                    style={{
-                      border: `0.5px solid ${P.rule}`,
-                      background: P.surface,
-                      padding: "40px",
-                    }}
-                  >
-                    <PaperGrain opacity={0.018} />
-                    <GridLines />
-                    <div className="flex items-center justify-between mb-6 relative z-10">
-                      <span className="font-sans text-[8px] uppercase tracking-[0.3em]" style={{ color: P.dim }}>
-                        Design artifact — feature {sol.index}
-                      </span>
-                      <span className="font-sans text-[8px] uppercase tracking-[0.3em]" style={{ color: P.dim }}>
-                        Origami Robotics — Operator Interface
-                      </span>
-                    </div>
-                    <div className="relative z-10">
-                      {i === 0 && <FoldStateWireframe className="w-full" />}
-                      {i === 1 && <SequenceDiagram className="w-full" />}
-                      {i === 2 && <ErrorCardDiagram className="w-full" />}
-                    </div>
-                  </motion.div>
-                </div>
-              </motion.div>
-            ))}
+            <AnimRule />
           </div>
         </section>
 
-        {/* ── Current status + Reflection ────────────────────────── */}
+        {/* ── Playground ──────────────────────────────────────────── */}
+        <section
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ backgroundColor: P.surface, borderTop: `0.5px solid ${P.rule}` }}
+        >
+          <PaperGrain opacity={0.022} />
+          <GridLines />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+            <motion.div
+              className="mb-14"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <SectionLabel>Playground</SectionLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                <h2
+                  className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
+                  style={{ color: P.ink }}
+                >
+                  Designed for<br />
+                  <span className="font-display italic" style={{ color: P.accent }}>live interactivity</span>
+                </h2>
+                <div className="flex flex-col gap-4">
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                    The playground was not a static design problem — it required real, live interactivity. Users needed to feel how the hand responds, not just see what it looks like. That shaped every UX decision we made.
+                  </p>
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                    We drew inspiration from Adobe After Effects, Photoshop, and Blender — all tools that use controls to manipulate another object, and all of which follow the same core layout: Sidebar, Canvas, Inspector. A key UX principle guided us: people spend more time on other applications than yours, so match their existing mental models.
+                  </p>
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                    AI was used to brainstorm interaction methods before implementation — we asked Claude for suggestions, evaluated them from a UX perspective, and then intentionally selected the ones that made the most sense rather than just shipping what was easiest to generate.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <AnimRule />
+
+            {/* Full UI annotated */}
+            <motion.div
+              className="mt-14"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ImgPlaceholder label="IMAGE: Full playground UI annotated — Presets, Hand Canvas, Sequences, Joint Angles, System Status, Toolbar" aspect="aspect-[16/9]" />
+            </motion.div>
+
+            {/* Feature breakdown */}
+            <div className="mt-14 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
+              <motion.div
+                className="md:col-span-5 flex flex-col gap-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <h3 className="font-serif text-2xl leading-tight tracking-tight" style={{ color: P.ink }}>
+                  Key features
+                </h3>
+                <div className="flex flex-col gap-5">
+                  {[
+                    { title: "Hand Canvas", body: "Click+drag or scroll to adjust individual joints. The central interaction surface." },
+                    { title: "Presets", body: "One-click poses: Open, Fist, Pinch, Point — plus custom configurations the user can save." },
+                    { title: "Sequences", body: "String a series of poses into movement scripts — useful for gripping, lifting, and placing workflows." },
+                    { title: "Joint Angles Inspector", body: "Dropdown per finger for precise numeric control. Housed in collapsible menus to prevent cognitive overload." },
+                    { title: "Keyboard Controls", body: "Q W E R T mapped to fingers; number keys for joints. An accessibility-forward alternative to mouse manipulation." },
+                  ].map((item) => (
+                    <div key={item.title} className="flex gap-4">
+                      <div className="w-px shrink-0 mt-1" style={{ backgroundColor: P.accent, minHeight: "1.2em" }} />
+                      <div>
+                        <p className="font-sans text-sm font-medium mb-0.5" style={{ color: P.ink }}>{item.title}</p>
+                        <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>{item.body}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="md:col-span-7 flex flex-col gap-6"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <ImgPlaceholder label="IMAGE: Interaction methods — 4 panel breakdown" aspect="aspect-[4/3]" />
+                <ImgPlaceholder label="IMAGE: Keyboard controls panel" aspect="aspect-[16/7]" />
+              </motion.div>
+            </div>
+
+            {/* Vibe-coded prototype */}
+            <motion.div
+              className="mt-14 flex flex-col gap-4"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              style={{ borderTop: `0.5px solid ${P.rule}`, paddingTop: "3.5rem" }}
+            >
+              <span className="font-sans text-[9px] uppercase tracking-[0.3em]" style={{ color: P.dim }}>
+                Vibe-coded prototype
+              </span>
+              <ImgPlaceholder label="VIDEO: Vibe-coded interactive prototype demo" aspect="aspect-[16/9]" />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Branding ────────────────────────────────────────────── */}
+        <section
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ borderTop: `0.5px solid ${P.rule}` }}
+        >
+          <PaperGrain opacity={0.018} />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+            <motion.div
+              className="mb-14"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <SectionLabel>Branding</SectionLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                <h2
+                  className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
+                  style={{ color: P.ink }}
+                >
+                  Balancing warmth<br />
+                  <span className="font-display italic" style={{ color: P.accent }}>with precision</span>
+                </h2>
+                <div className="flex flex-col gap-4">
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                    We explored four directions: (1) Organic, soft, and calm — friendly but simple; (2) Futuristic yet present — popular among established hardware companies; (3) Precise and modular — with an academic, research-lab feel; (4) Warm and retro — approachable, almost domestic.
+                  </p>
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                    After discussing with the founders, we landed on a balance between organic/warm and precise/academic. Origami folding is playful and tactile by nature — that warmth felt right. But the primary users are researchers, so credibility couldn't be sacrificed. The final color palette anchors around ivory as a base: tranquil and calm, but grounded.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            <AnimRule />
+
+            <div className="mt-14 flex flex-col gap-10">
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-5" style={{ color: P.dim }}>
+                  Direction exploration
+                </span>
+                <ImgPlaceholder label="IMAGE: 4 branding direction moodboards side by side" aspect="aspect-[16/7]" />
+              </motion.div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {[
+                  { sublabel: "Final color palette", label: "IMAGE: Final color palette" },
+                  { sublabel: "Brand book", label: "IMAGE: Brand book / style guide spread" },
+                ].map((item) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <span className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-3" style={{ color: P.dim }}>
+                      {item.sublabel}
+                    </span>
+                    <ImgPlaceholder label={item.label} aspect="aspect-[4/3]" />
+                  </motion.div>
+                ))}
+              </div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <span className="font-sans text-[9px] uppercase tracking-[0.3em] block mb-3" style={{ color: P.dim }}>
+                  Coded landing page
+                </span>
+                <ImgPlaceholder label="IMAGE: Landing page coded prototype screenshot" aspect="aspect-[16/9]" />
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── AI in Workflow ──────────────────────────────────────── */}
+        <section
+          className="py-32 relative overflow-hidden"
+          style={{
+            backgroundColor: P.surface,
+            borderTop: `0.5px solid ${P.rule}`,
+            borderBottom: `0.5px solid ${P.rule}`,
+          }}
+        >
+          <PaperGrain opacity={0.022} />
+          <GridLines />
+          <div className="max-w-[1200px] mx-auto px-6 sm:px-12 md:px-24 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="mb-14"
+            >
+              <SectionLabel>AI in Workflow</SectionLabel>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                <h2
+                  className="font-serif text-3xl md:text-4xl leading-tight tracking-tight"
+                  style={{ color: P.ink }}
+                >
+                  Tools that augment craft.<br />
+                  <span className="font-display italic" style={{ color: P.accent }}>Not replace it.</span>
+                </h2>
+                <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                  AI was integrated into our process in three meaningful ways — not as decoration, but as something that changed how we worked.
+                </p>
+              </div>
+            </motion.div>
+
+            <AnimRule />
+
+            <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                {
+                  n: "01",
+                  title: "Faster iteration",
+                  body: "We explored more visual directions and concepts in a short amount of time than a traditional workflow would have allowed. More options meant better decisions.",
+                },
+                {
+                  n: "02",
+                  title: "Ideas made interactive",
+                  body: "For a product centered on a robotic hand, static mockups weren't enough. AI helped us build prototypes where actions had reactions — letting everyone feel how the design worked, in real time.",
+                },
+                {
+                  n: "03",
+                  title: "Better feedback earlier",
+                  body: "Interactive prototypes shortened the feedback loop. Less time spent discussing abstract ideas. More time reacting to something real and iterating on what we learned.",
+                },
+              ].map((item) => (
+                <motion.div
+                  key={item.n}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                  className="flex flex-col gap-4 p-6"
+                  style={{ background: "#FDFAF5", border: `0.5px solid ${P.rule}`, borderRadius: 10 }}
+                >
+                  <span className="font-sans text-[10px] uppercase tracking-[0.3em]" style={{ color: P.accent }}>{item.n}</span>
+                  <h4 className="font-serif text-lg leading-snug" style={{ color: P.ink }}>{item.title}</h4>
+                  <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>{item.body}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Pullquote */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-16 text-center"
+            >
+              <p
+                className="font-display italic leading-tight"
+                style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", color: P.ink }}
+              >
+                "AI gave us options. But not decisions."
+              </p>
+              <p className="font-sans text-sm mt-4 font-light" style={{ color: P.dim }}>
+                Tools can augment taste. They don't replace it. Strong design judgment is still what separates good from great.
+              </p>
+            </motion.div>
+
+            <motion.div
+              className="mt-14"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <ImgPlaceholder label="IMAGE: Side-by-side — AI-generated options vs final chosen direction" aspect="aspect-[16/7]" />
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Why This Succeeded ──────────────────────────────────── */}
+        <section
+          className="py-28 md:py-36 relative overflow-hidden"
+          style={{ borderTop: `0.5px solid ${P.rule}` }}
+        >
+          <PaperGrain opacity={0.018} />
+          <div className="px-6 sm:px-12 md:px-24 max-w-[900px] mx-auto text-center relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <SectionLabel>Why This Succeeded</SectionLabel>
+              <h2
+                className="font-serif leading-tight mt-8 mb-8"
+                style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", color: P.ink }}
+              >
+                We designed the{" "}
+                <span className="font-display italic" style={{ color: P.accent }}>right things</span>
+                , not just better versions of what existed.
+              </h2>
+              <p className="font-sans text-base md:text-lg leading-relaxed font-light" style={{ color: P.body }}>
+                The project succeeded because we resisted the instinct to simply redesign the existing dashboard. Instead, we stepped back and mapped the full user journey first — which led us to identify the two touchpoints that actually mattered most to new users: getting set up, and being able to explore what the hand can do.
+              </p>
+              <p className="font-sans text-base md:text-lg leading-relaxed font-light mt-6" style={{ color: P.body }}>
+                The combination of a structured onboarding flow, an intuitive playground, and a cohesive brand gave Origami Robotics a complete end-to-end experience for new external users for the first time.
+              </p>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* ── Reflection & Next Steps ─────────────────────────────── */}
         <section
           className="py-28 md:py-36 relative overflow-hidden"
           style={{
@@ -1386,20 +1366,19 @@ export function OrigamiCaseStudy() {
                 viewport={{ once: true }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               >
-                <SectionLabel>Status &amp; reflection</SectionLabel>
+                <SectionLabel>Reflection & Next Steps</SectionLabel>
                 <h2
                   className="font-serif text-3xl md:text-4xl tracking-tight leading-tight mt-4"
                   style={{ color: P.ink }}
                 >
-                  Work{" "}
+                  What we<br />
                   <span className="font-display italic" style={{ color: P.accent }}>
-                    in progress
+                    learned
                   </span>
                 </h2>
               </motion.div>
 
               <div className="md:col-span-8 flex flex-col gap-10">
-                {/* Current status */}
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -1412,14 +1391,13 @@ export function OrigamiCaseStudy() {
                     className="font-sans text-[10px] uppercase tracking-[0.3em] block mb-4"
                     style={{ color: P.accent }}
                   >
-                    Current status
+                    Reflection
                   </span>
                   <p className="font-sans leading-relaxed text-base font-light" style={{ color: P.body }}>
-                    This project is still evolving across multiple surfaces. I have helped establish the visual language, produced AI-assisted assets for product storytelling, and contributed to the website direction — while the internal engineer-facing dashboard is still in research and early concept development.
+                    Working with a technically complex product required spending real time with the founders to understand the hardware before designing anything. Skipping that step would have meant solving the wrong problems. AI accelerated our process — but it also surfaced a harder challenge. In an era where everything can look polished quickly, strong design judgment and taste matter more than ever. Tools augment craft. They don't replace it.
                   </p>
                 </motion.div>
 
-                {/* Reflection */}
                 <motion.div
                   initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -1432,11 +1410,25 @@ export function OrigamiCaseStudy() {
                     className="font-sans text-[10px] uppercase tracking-[0.3em] block mb-4"
                     style={{ color: P.accent }}
                   >
-                    Reflection
+                    Next Steps
                   </span>
-                  <p className="font-sans leading-relaxed text-base font-light" style={{ color: P.body }}>
-                    Rather than a fully shipped product story, this work reflects a systems-in-progress design engagement. It taught me how to contribute value in ambiguous environments — by shaping product framing, visual communication, and early workflow thinking in parallel.
-                  </p>
+                  <div className="flex flex-col gap-4">
+                    {[
+                      { n: "01", text: "User testing with real external users to validate the onboarding flow end-to-end." },
+                      { n: "02", text: "Expand the playground with more advanced sequence building and custom preset sharing between teams." },
+                      { n: "03", text: "Scale the branding system to pitch deck, social, and email touchpoints." },
+                      { n: "04", text: "Design for the second user group — factory and warehouse workers — who have even less technical background and will need a simpler, more forgiving interaction model." },
+                    ].map((item) => (
+                      <div key={item.n} className="flex gap-4">
+                        <span className="font-sans text-[10px] pt-[3px] shrink-0 tracking-[0.2em]" style={{ color: P.accent }}>
+                          {item.n}
+                        </span>
+                        <p className="font-sans text-sm leading-relaxed font-light" style={{ color: P.body }}>
+                          {item.text}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </motion.div>
               </div>
             </div>
@@ -1496,6 +1488,8 @@ export function OrigamiCaseStudy() {
             </Link>
           </div>
         </section>
+
+        </ComingSoonBlur>
 
         <Footer />
       </div>
